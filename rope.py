@@ -2,7 +2,7 @@ import torch
 
 
 def apply_rope(x: torch.Tensor, base: float = 10000.0) -> torch.Tensor:
-    """ eq. 31 in https://arxiv.org/abs/2104.09864 """
+    """ eq. 34 in https://arxiv.org/abs/2104.09864 """
 
     batch_size, seq_len, hidden_dim = x.shape
     assert hidden_dim % 2 == 0, "hidden dimension must be even for RoPE"
