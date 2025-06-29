@@ -12,6 +12,7 @@ class RoPE(torch.nn.Module):
         self.sin_cached = None
 
     def forward(self, x):
+        assert x.size(-1) == self.dim
         self._build_sin_cos(x)
         x1 = x[..., :self.dim // 2]
         x2 = x[..., self.dim // 2:]
