@@ -29,6 +29,7 @@ class RoPE(torch.nn.Module):
             self.cos_cached = angles.cos()[None, :, None, :]
             self.sin_cached = angles.sin()[None, :, None, :]
 
+
 def __main__():
     batch, seq_len, num_heads, head_dim = 2, 128, 12, 6
     x = torch.randn(batch, seq_len, num_heads, head_dim)
