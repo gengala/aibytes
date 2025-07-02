@@ -18,7 +18,7 @@ class RoPE(torch.nn.Module):
         x2 = x[..., self.dim // 2:]
         y1 = x1 * self.cos_cached + x2 * self.sin_cached
         y2 = x2 * self.cos_cached - x1 * self.sin_cached
-        return torch.cat([y1, y2], 3)
+        return torch.cat([y1, y2], dim=-1)
 
     def _build_sin_cos(self, x):
         seq_len = x.size(1)
