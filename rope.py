@@ -31,8 +31,32 @@ class RoPE(torch.nn.Module):
 
 
 def __main__():
-    batch, seq_len, num_heads, head_dim = 2, 128, 12, 6
-    x = torch.randn(batch, seq_len, num_heads, head_dim)
+    batch_size, seq_len, num_heads, head_dim = 32, 128, 12, 6
+    x = torch.randn(batch_size, seq_len, num_heads, head_dim)
     rope = RoPE(head_dim)
     x_rope = rope(x)
     print(x.shape, x_rope.shape)
+
+    # example 1: different positions i, j → ⟨RoPE(x, i), RoPE(y, j)⟩ depends only on (j - i)
+    i, j, shift = 10, 25, 100
+    assert i + shift < seq_len and j + shift < seq_len
+    v_i = torch.randn(batch_size, num_heads, head_dim)
+    x[:, i] = x[:, i + shift] = v_i
+    v_j = torch.randn(batch_size, num_heads, head_dim)
+    x[:, j] = x[:, j + shift] = v_j
+    v_i_rope = rope(x)[:, i]
+    v_j_rope = rope(x)[:, j]
+    v_i_rope_shift = rope(x)[:, i + shift]
+    v_j_rope_shift = rope(x)[:, j + shift]
+    dot_rope = (v_i_rope * v_j_rope).sum(dim=-1)
+    dot_rope_shift = (v_i_rope_shift * v_j_rope_shift).sum(dim=-1)
+    print(torch.allclose(dot_rope, dot_rope_shift, atol=1e-5)) # True
+
+    # example 2: same position t for two different sequences a, b → rotation cancels out
+    x1 = torch.randn(batch_size, seq_len, num_heads, head_dim)
+    x2 = torch.randn(batch_size, seq_len, num_heads, head_dim)
+    x1_rope = rope(x1)
+    x2_rope = rope(x2)
+    dot = (x1 * x2).sum(dim=-1)
+    dot_rope = (x1_rope * x2_rope).sum(dim=-1)
+    print(torch.allclose(dot, dot_rope, atol=1e-5)) # True
